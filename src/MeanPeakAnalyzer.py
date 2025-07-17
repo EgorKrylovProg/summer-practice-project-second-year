@@ -2,18 +2,60 @@ import numpy as np
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 
+from src.TrainSpeedAnalyzer import TrainSpeedAnalyzer
+
 
 class MeanPeakAnalyzer:
-    def __init__(self, df):
+    def __init__(self, df, fs):
         self.df = df
         self.time = df.iloc[:, 0].values
         self.sensor_columns = df.columns[1:]
+        self.fs = fs
+        self.ignore_start_sec = 1.486
+        self.speed_analyzer = TrainSpeedAnalyzer()
+
+    def _filter_peaks_by_sequence(self, peaks, data):
+        if len(peaks) < 2:
+            return peaks
+
+        filtered = [peaks[0]]
+        prev_value = abs(data[peaks[0]])
+
+        for i in range(1, len(peaks)):
+            current_value = abs(data[peaks[i]])
+            if current_value >= prev_value * 0.45:
+                filtered.append(peaks[i])
+                prev_value = current_value
+
+        return np.array(filtered)
 
     def _find_peaks(self, data):
         std = np.std(data)
         height = np.percentile(np.abs(data), 70)
-        max_peaks, _ = find_peaks(data, height=height, prominence=std*0.5, distance=5)
-        min_peaks, _ = find_peaks(-data, height=height, prominence=std*0.5, distance=5)
+        min_time_distance = 0.08
+        min_samples_distance = int(min_time_distance * self.fs)
+
+        start_idx = np.searchsorted(self.time, self.ignore_start_sec)
+
+        max_peaks, _ = find_peaks(data[start_idx:], height=height,
+                                  prominence=std * 0.5, distance=min_samples_distance)
+        min_peaks, _ = find_peaks(-data[start_idx:], height=height,
+                                  prominence=std * 0.5, distance=min_samples_distance)
+
+        max_peaks = max_peaks + start_idx if len(max_peaks) > 0 else np.array([], dtype=int)
+        min_peaks = min_peaks + start_idx if len(min_peaks) > 0 else np.array([], dtype=int)
+
+        if len(min_peaks) > 2:
+            min_values = -data[min_peaks]
+            q1, q3 = np.percentile(min_values, [25, 75])
+            iqr = q3 - q1
+            lower_bound = q1 - 1.5 * iqr
+            valid_min = min_values >= lower_bound
+            min_peaks = min_peaks[valid_min]
+
+        max_peaks = self._filter_peaks_by_sequence(max_peaks, data)
+        min_peaks = self._filter_peaks_by_sequence(min_peaks, -data)
+
         return max_peaks, min_peaks
 
     def _classify_signal(self, data, max_peaks, min_peaks):
@@ -93,26 +135,30 @@ class MeanPeakAnalyzer:
     def analyze(self):
         print(f"Найдено датчиков: {len(self.sensor_columns)}")
         print("Закрывайте график для перехода к следующему датчику...")
-
         results = []
+
         for sensor in self.sensor_columns:
             print(f"\nАнализ датчика: {sensor}")
             data = self.df[sensor].values
             max_peaks, min_peaks = self._find_peaks(data)
-            signal_type = self._classify_signal(data, max_peaks, min_peaks)
-            mean_max = np.mean(data[max_peaks]) if len(max_peaks) > 0 else 0
-            mean_min = np.mean(np.abs(data[min_peaks])) if len(min_peaks) > 0 else 0
-            ratio = mean_max / mean_min if mean_min != 0 else float('inf')
 
-            print(f"Тип: {signal_type}, Средний максимум: {mean_max:.2f}, Средний минимум: {mean_min:.2f}, Соотношение: {ratio:.2f}:1")
+            if len(max_peaks) < 4:
+                print("  [!] Недостаточно пиков для анализа (нужно минимум 4)")
+                print("  [i] Пропускаем датчик. Закройте график для продолжения...")
+                self._plot_signal(sensor, self.time, data, max_peaks, min_peaks, 'abnormal')
+                continue
+
+            speeds = self.speed_analyzer.calculate_speeds(self.time, max_peaks)
+            self.speed_analyzer.print_speeds(speeds)
+
+            signal_type = self._classify_signal(data, max_peaks, min_peaks)
             self._plot_signal(sensor, self.time, data, max_peaks, min_peaks, signal_type)
 
             results.append({
                 'sensor': sensor,
                 'type': signal_type,
-                'mean_max': mean_max,
-                'mean_min': mean_min,
-                'ratio': ratio
+                'mean_max': np.mean(data[max_peaks]) if len(max_peaks) > 0 else 0,
+                'mean_min': np.mean(np.abs(data[min_peaks])) if len(min_peaks) > 0 else 0
             })
 
         self._print_summary(results)
@@ -129,6 +175,7 @@ class MeanPeakAnalyzer:
         for typ in ['max_dominated', 'min_dominated']:
             filtered = [r for r in results if r['type'] == typ]
             if filtered:
-                ratios = [r['ratio'] if typ == 'max_dominated' else 1 / r['ratio'] for r in filtered]
+                ratios = [r['mean_max'] / r['mean_min'] if typ == 'max_dominated' else r['mean_min'] / r['mean_max'] for
+                          r in filtered]
                 avg_ratio = np.mean(ratios)
                 print(f"Среднее соотношение для {typ}: {avg_ratio:.2f}:1")

@@ -1,16 +1,18 @@
 import numpy as np
-from sklearn.ensemble import IsolationForest
+import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
 
 class AnomalyDetector:
-    def __init__(self, contamination=0.01):
+    def __init__(self, contamination=0.005):
         self.contamination = contamination
 
     def detect_anomalies(self, time_values, sensor_data, sensor_name, plot=False):
-        # Создаем копию данных для очищенной версии
         cleaned_data = sensor_data.copy()
 
-        # Обнаружение аномалий
+        if sensor_data.empty:
+            return cleaned_data, pd.Series([], dtype=float)
+
         iso_forest = IsolationForest(contamination=self.contamination, random_state=42)
         anomalies = iso_forest.fit_predict(sensor_data.values.reshape(-1, 1))
         point_anomalies = sensor_data[anomalies == -1]
@@ -18,10 +20,7 @@ class AnomalyDetector:
         if plot:
             self._plot_anomalies(time_values, sensor_data, sensor_name, point_anomalies)
 
-        # Удаление аномалий (заменяем на NaN)
-        cleaned_data[point_anomalies.index] = np.nan
-
-        # Интерполяция пропущенных значений
+        cleaned_data.loc[point_anomalies.index] = np.nan
         cleaned_data = cleaned_data.interpolate(method='linear', limit_direction='both')
 
         return cleaned_data, point_anomalies
@@ -29,7 +28,6 @@ class AnomalyDetector:
     def _plot_anomalies(self, time_values, sensor_data, sensor_name, point_anomalies):
         plt.figure(figsize=(16, 6))
 
-        # График ДО обработки (с аномалиями)
         plt.subplot(1, 2, 1)
         plt.plot(time_values, sensor_data, label='Исходные данные', color='blue', linewidth=1)
 
@@ -43,7 +41,6 @@ class AnomalyDetector:
         plt.legend()
         plt.grid(True)
 
-        # График ПОСЛЕ обработки (без аномалий)
         plt.subplot(1, 2, 2)
         cleaned_series = sensor_data.copy()
         cleaned_series[point_anomalies.index] = np.nan
