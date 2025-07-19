@@ -193,14 +193,14 @@ class MeanPeakAnalyzer:
     def _classify_signal_preliminary(self, data):
         """Быстрая классификация по упрощенным критериям"""
         # Берем 90-й перцентиль вместо максимальных значений
-        max_val = np.percentile(data, 90)
-        min_val = np.percentile(-data, 90)
+        max_val = np.percentile(data, 50)
+        min_val = np.percentile(-data, 50)
         
         if max_val == 0 and min_val == 0:
             return 'abnormal'
-        elif max_val > min_val * 1.7:  # Более жесткий критерий для предварительной оценки
+        elif max_val > min_val * 1.5:  # Более жесткий критерий для предварительной оценки
             return 'max_dominated'
-        elif min_val > max_val * 1.7:
+        elif min_val > max_val * 1.5:
             return 'min_dominated'
         else:
             return 'balanced'
