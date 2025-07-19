@@ -19,7 +19,6 @@ class AnomalyDetector:
 
         if plot:
             self._plot_anomalies(time_values, sensor_data, sensor_name, point_anomalies)
-
         cleaned_data.loc[point_anomalies.index] = np.nan
         cleaned_data = cleaned_data.interpolate(method='linear', limit_direction='both')
 
