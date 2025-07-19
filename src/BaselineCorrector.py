@@ -6,6 +6,7 @@ class BaselineCorrector:
         self.fs = fs
         self.win_sec = win_sec
 
+
     def baseline_median(self, data):
         w = int(self.win_sec * self.fs)
         if w % 2 == 0: w += 1
