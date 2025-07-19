@@ -61,7 +61,6 @@ class SignalPipeline:
         analyzer = MeanPeakAnalyzer(self.df_corrected, self.fs)
         analyzer.analyze()
 
-
 if __name__ == "__main__":
     file_path = 'resources/клин 600 701.txt'
     pipeline = SignalPipeline(file_path)
