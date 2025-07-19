@@ -23,6 +23,7 @@ class TrainSpeedAnalyzer:
                     speed_data.append((time, speed, delta_t))
         return speed_data
 
+
     def print_speeds(self, speed_data):
         if not speed_data:
             print("  [i] Недостаточно пиков для расчёта скорости")
