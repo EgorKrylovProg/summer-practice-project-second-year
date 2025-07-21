@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from BaselineCorrector import BaselineCorrector
-from MeanPeakAnalyzer import MeanPeakAnalyzer
-from AnomalyDetector import AnomalyDetector
+from src.BaselineCorrector import BaselineCorrector
+from src.MeanPeakAnalyzer import MeanPeakAnalyzer
+from src.AnomalyDetector import AnomalyDetector
 
 
 class SignalPipeline:

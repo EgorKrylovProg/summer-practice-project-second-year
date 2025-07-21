@@ -1,6 +1,13 @@
 import numpy as np
 from scipy.signal import find_peaks
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('tkagg')
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    import matplotlib
+    matplotlib.use('TkAgg')
+
 
 from TrainSpeedAnalyzer import TrainSpeedAnalyzer
 

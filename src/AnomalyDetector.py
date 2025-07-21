@@ -1,6 +1,14 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+
+import matplotlib
+matplotlib.use('tkagg')
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    import matplotlib
+    matplotlib.use('TkAgg')
+
 from sklearn.ensemble import IsolationForest
 
 class AnomalyDetector:
