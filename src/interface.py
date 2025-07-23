@@ -62,7 +62,7 @@ class SensorAnalyzerApp:
         
         self.pdf_btn = tk.Button(
             self.bottom_panel, 
-            text="Работа с PDF", 
+            text="Экспорт данных", 
             command=self.show_pdf_mode,
             width=20,
             height=2
@@ -185,14 +185,7 @@ class SensorAnalyzerApp:
         title_label.pack(pady=10)
         
         # Load PDF button
-        self.load_pdf_btn = tk.Button(
-            self.content_frame, 
-            text="Загрузить PDF", 
-            command=self.load_pdf,
-            width=20,
-            height=2
-        )
-        self.load_pdf_btn.pack(pady=10)
+        
         
         # Preview frame with both scrollbars
         preview_frame = tk.LabelFrame(self.content_frame, text="Предпросмотр данных")
