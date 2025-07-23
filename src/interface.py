@@ -68,6 +68,37 @@ class SensorAnalyzerApp:
             height=2
         )
         self.pdf_btn.pack(side=tk.LEFT, padx=10, pady=5)
+        
+        # Добавленная кнопка "Удалить вложение"
+        self.clear_btn = tk.Button(
+            self.bottom_panel,
+            text="Удалить вложение",
+            command=self.clear_attachments,
+            width=20,
+            height=2,
+            bg='#ffcccc'  # Красноватый фон для предупреждения
+        )
+        self.clear_btn.pack(side=tk.RIGHT, padx=10, pady=5)
+
+    def clear_attachments(self):
+        """Удаляет все загруженные вложения (данные датчиков и PDF)"""
+        if messagebox.askyesno(
+            "Подтверждение", 
+            "Вы уверены, что хотите удалить все загруженные данные?\nЭто действие нельзя отменить.",
+            icon='warning'
+        ):
+            self.close_all()
+            self.nature_list_data = None
+            self.export_data_df = None
+            
+            # Очищаем информацию о файлах в интерфейсе
+            self.file_label.config(text="Файл не выбран")
+            
+            # Обновляем кнопки
+            if hasattr(self, 'export_btn'):
+                self.export_btn.config(state=tk.DISABLED)
+            
+            messagebox.showinfo("Успех", "Все загруженные данные были удалены")
 
     def _update_preview_table_columns(self):
         """Обновляет колонки таблицы предпросмотра с настройками для горизонтального скролла"""
