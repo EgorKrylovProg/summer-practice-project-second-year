@@ -23,7 +23,7 @@ class SensorAnalyzerApp:
         self.root.title("Анализатор сигналов датчиков")
         self.root.geometry("1400x900")
         
-        # Data variables
+        
         self.current_sensor = 0
         self.sensors = []
         self.results = []  # Результаты анализа датчиков
@@ -33,24 +33,23 @@ class SensorAnalyzerApp:
         self.analyzer = None
         self.export_data_df = None
         
-        # Create UI
         self.create_widgets()
         self.show_analysis_mode()
     
     def create_widgets(self):
-        # Main container
+        
         self.main_container = tk.Frame(self.root)
         self.main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Content area (will be filled by mode functions)
+        
         self.content_frame = tk.Frame(self.main_container)
         self.content_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Bottom control panel
+        
         self.bottom_panel = tk.Frame(self.root, height=50, bg='#f0f0f0')
         self.bottom_panel.pack(fill=tk.X, side=tk.BOTTOM, padx=5, pady=5)
         
-        # Mode switch buttons
+        
         self.analysis_btn = tk.Button(
             self.bottom_panel, 
             text="Анализ графиков", 
@@ -69,14 +68,14 @@ class SensorAnalyzerApp:
         )
         self.pdf_btn.pack(side=tk.LEFT, padx=10, pady=5)
         
-        # Добавленная кнопка "Удалить вложение"
+        
         self.clear_btn = tk.Button(
             self.bottom_panel,
             text="Удалить вложение",
             command=self.clear_attachments,
             width=20,
             height=2,
-            bg='#ffcccc'  # Красноватый фон для предупреждения
+            bg='#ffcccc'  
         )
         self.clear_btn.pack(side=tk.RIGHT, padx=10, pady=5)
 
@@ -91,10 +90,10 @@ class SensorAnalyzerApp:
             self.nature_list_data = None
             self.export_data_df = None
             
-            # Очищаем информацию о файлах в интерфейсе
+            
             self.file_label.config(text="Файл не выбран")
             
-            # Обновляем кнопки
+            
             if hasattr(self, 'export_btn'):
                 self.export_btn.config(state=tk.DISABLED)
             
@@ -105,22 +104,17 @@ class SensorAnalyzerApp:
         if not hasattr(self, 'export_data_df') or self.export_data_df.empty:
             return
         
-        # Очищаем текущие колонки
         for col in self.preview_table['columns']:
             self.preview_table.heading(col, text='')
             self.preview_table.column(col, width=0)
         
-        # Устанавливаем новые колонки
         columns = list(self.export_data_df.columns)
         self.preview_table['columns'] = columns
         
-        # Настраиваем заголовки и ширину колонок
         for col in columns:
             self.preview_table.heading(col, text=col, anchor='center')
-            # Устанавливаем минимальную ширину и возможность растягивания
             self.preview_table.column(col, width=100, minwidth=50, stretch=tk.YES, anchor='center')
         
-        # Первые две колонки делаем фиксированной ширины
         if len(columns) >= 1:
             self.preview_table.column(columns[0], width=80, stretch=tk.NO)
         if len(columns) >= 2:
@@ -136,7 +130,6 @@ class SensorAnalyzerApp:
         for _, row in self.export_data_df.iterrows():
             values = []
             for col in self.export_data_df.columns:
-                # Форматируем числа с двумя знаками после запятой
                 if isinstance(row[col], (int, float)):
                     values.append(f"{row[col]:.2f}")
                 else:
@@ -145,11 +138,9 @@ class SensorAnalyzerApp:
             self.preview_table.insert('', 'end', values=values)
 
     def create_side_panel(self):
-        # Left panel with buttons
         self.side_panel = tk.Frame(self.root, width=150, bg='#f0f0f0')
         self.side_panel.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
         
-        # Analysis mode button
         self.analyze_btn = tk.Button(
             self.side_panel, 
             text="Анализ графиков", 
@@ -159,7 +150,6 @@ class SensorAnalyzerApp:
         )
         self.analyze_btn.pack(pady=10, padx=5, fill=tk.X)
         
-        # Import mode button
         self.import_btn = tk.Button(
             self.side_panel, 
             text="Импорт натурного листа", 
@@ -169,7 +159,6 @@ class SensorAnalyzerApp:
         )
         self.import_btn.pack(pady=10, padx=5, fill=tk.X)
         
-        # Start with analysis mode
         self.show_analysis_mode()
     def clear_content(self):
         """Очищает область контента, не затрагивая данные"""
@@ -180,26 +169,25 @@ class SensorAnalyzerApp:
         self._save_analysis_mode_state()
         self.clear_content()
         
-        # Title
+        
         title_label = tk.Label(self.content_frame, text="Работа с натурным листом (PDF)", font=('Arial', 14))
         title_label.pack(pady=10)
         
-        # Load PDF button
         
         
-        # Preview frame with both scrollbars
+       
         preview_frame = tk.LabelFrame(self.content_frame, text="Предпросмотр данных")
         preview_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Create horizontal scrollbar
+        
         xscrollbar = ttk.Scrollbar(preview_frame, orient="horizontal")
         xscrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         
-        # Create vertical scrollbar
+        
         yscrollbar = ttk.Scrollbar(preview_frame, orient="vertical")
         yscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Create table with both scrollbars
+        
         self.preview_table = ttk.Treeview(
             preview_frame, 
             show='headings',
@@ -208,16 +196,16 @@ class SensorAnalyzerApp:
         )
         self.preview_table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Configure scrollbars
+        
         xscrollbar.config(command=self.preview_table.xview)
         yscrollbar.config(command=self.preview_table.yview)
         
-        # Make columns resizable and enable horizontal scrolling
+        
         style = ttk.Style()
         style.configure("Treeview", rowheight=25)
         style.configure("Treeview.Heading", font=('Arial', 10, 'bold'))
         
-        # Check for existing export data
+        
         export_data_exists = (hasattr(self, 'export_data_df') and 
                             self.export_data_df is not None and 
                             not self.export_data_df.empty)
@@ -226,7 +214,7 @@ class SensorAnalyzerApp:
             self._update_preview_table_columns()
             self._fill_preview_table()
         
-        # Export options
+        
         export_frame = tk.Frame(self.content_frame)
         export_frame.pack(pady=10)
         
@@ -248,7 +236,7 @@ class SensorAnalyzerApp:
             value='txt'
         ).pack(side=tk.LEFT, padx=10)
         
-        # Export button
+        
         export_btn_state = tk.NORMAL if export_data_exists else tk.DISABLED
         self.export_btn = tk.Button(
             self.content_frame, 
@@ -271,35 +259,30 @@ class SensorAnalyzerApp:
                 self.nature_list_data = []
                 
                 for page in pdf.pages:
-                    # Извлекаем таблицу с текущей страницы
                     table = page.extract_table()
-                    if not table or len(table) < 2:  # Пропускаем пустые таблицы или без данных
+                    if not table or len(table) < 2:  
                         continue
                     
-                    # Находим индекс столбца "Т на ось"
+                    
                     headers = [col.strip().lower() for col in table[0]]
                     try:
                         load_col_index = headers.index("т на ось")
                     except ValueError:
-                        # Альтернативные варианты написания заголовка
                         alt_names = ["t на ось", "нагрузка", "на ось"]
                         for name in alt_names:
                             if name in headers:
                                 load_col_index = headers.index(name)
                                 break
                         else:
-                            continue  # Пропускаем страницу, если не нашли нужный столбец
+                            continue  
                     
-                    # Обрабатываем строки данных
                     for row in table[1:]:
                         if len(row) <= load_col_index:
                             continue
                         
-                        # Извлекаем номер и нагрузку
                         num = row[0].strip() if row[0] else ""
                         load = row[load_col_index].strip().replace(",", ".").replace("°", "") if row[load_col_index] else "0"
                         
-                        # Преобразуем нагрузку в число
                         try:
                             load_val = float(load) if load else 0.0
                         except ValueError:
@@ -314,18 +297,15 @@ class SensorAnalyzerApp:
                     messagebox.showerror("Ошибка", "Не удалось найти данные 'Т на ось' в PDF")
                     return
                 
-                # Синхронизация между вкладками
                 if hasattr(self, '_analysis_mode_state'):
                     self._analysis_mode_state['nature_list_data'] = self.nature_list_data.copy()
                 if hasattr(self, '_pdf_mode_state'):
                     self._pdf_mode_state['nature_list_data'] = self.nature_list_data.copy()
                 
-                # Обновление интерфейса
                 nature_filename = Path(file_path).name
                 current_text = self.file_label.cget("text")
                 self.file_label.config(text=f"{current_text}\nНатурный лист: {nature_filename}")
                 
-                # Подготовка данных для экспорта
                 if hasattr(self, 'results') and self.results:
                     self.prepare_export_data()
                     if hasattr(self, 'preview_table'):
@@ -372,19 +352,15 @@ class SensorAnalyzerApp:
             self.current_filename = Path(file_path).name
             self.file_label.config(text=f"Датчики: {self.current_filename}")
             
-            # Process file
             self.pipeline = SignalPipeline(file_path)
             self.analyzer = MeanPeakAnalyzer(self.pipeline.df_corrected, self.pipeline.fs)
             
-            # Get results for all sensors
             self.results = []
             for sensor in self.analyzer.sensor_columns:
                 data = self.analyzer.df[sensor].values
                 
-                # Быстрая классификация сигнала
                 signal_type = self.analyzer._classify_signal_preliminary(data)
                 
-                # Для balanced сигналов не ищем пики
                 if signal_type == 'balanced':
                     self.results.append({
                         'sensor': sensor,
@@ -401,7 +377,6 @@ class SensorAnalyzerApp:
                     })
                     continue
                 
-                # Для других типов сигналов проводим полный анализ
                 max_peaks, min_peaks = self.analyzer._find_peaks(data)
                 signal_type = self.analyzer._classify_signal(data, max_peaks, min_peaks)
                 
@@ -430,11 +405,9 @@ class SensorAnalyzerApp:
             self.show_sensor()
             self.update_nav_buttons()
             
-            # Если есть натурный лист, готовим данные для экспорта
             if hasattr(self, 'nature_list_data') and self.nature_list_data:
                 self.prepare_export_data()
             
-            # Enable buttons
             self.speed_btn.config(state=tk.NORMAL)
             self.show_raw_btn.config(state=tk.NORMAL)
             
@@ -444,13 +417,10 @@ class SensorAnalyzerApp:
     
     def show_analysis_mode(self):
         """Показывает интерфейс анализа графиков"""
-        # Сохраняем состояние PDF режима перед переключением
         if hasattr(self, '_pdf_mode_state'):
             state = self._pdf_mode_state
             self.export_data_df = state['export_data_df'].copy() if state['export_data_df'] is not None else None
             self.nature_list_data = state['nature_list_data'].copy() if state['nature_list_data'] else None
-        """Показывает интерфейс анализа графиков"""
-        # Восстанавливаем состояние, если оно было сохранено
         if hasattr(self, '_analysis_mode_state'):
             state = self._analysis_mode_state
             self.current_sensor = state['current_sensor']
@@ -463,15 +433,12 @@ class SensorAnalyzerApp:
         
         self.clear_content()
         
-        # Left panel with controls and table
         left_panel = tk.Frame(self.content_frame, width=300)
         left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
         
-        # File controls frame
         file_frame = tk.LabelFrame(left_panel, text="Управление данными")
         file_frame.pack(fill=tk.X, pady=5)
         
-        # Button to load sensor data
         self.load_sensors_btn = tk.Button(
             file_frame, 
             text="Загрузить данные датчиков", 
@@ -481,7 +448,6 @@ class SensorAnalyzerApp:
         )
         self.load_sensors_btn.pack(fill=tk.X, padx=5, pady=5)
         
-        # Button to load nature list
         self.load_nature_btn = tk.Button(
             file_frame, 
             text="Загрузить натурный лист", 
@@ -491,11 +457,9 @@ class SensorAnalyzerApp:
         )
         self.load_nature_btn.pack(fill=tk.X, padx=5, pady=5)
         
-        # File info label
         self.file_label = tk.Label(file_frame, text=self.current_filename if self.current_filename else "Файл не выбран", wraplength=280)
         self.file_label.pack(fill=tk.X, padx=5, pady=5)
         
-        # Navigation controls
         nav_frame = tk.LabelFrame(left_panel, text="Навигация")
         nav_frame.pack(fill=tk.X, pady=5)
         
@@ -532,11 +496,9 @@ class SensorAnalyzerApp:
         
         self.table.bind('<<TreeviewSelect>>', self.on_table_select)
         
-        # Right panel with graph and info
         right_panel = tk.Frame(self.content_frame)
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
-        # Sensor info
         info_frame = tk.LabelFrame(right_panel, text="Информация о датчике")
         info_frame.pack(fill=tk.X, padx=5, pady=5)
         
@@ -563,7 +525,6 @@ class SensorAnalyzerApp:
         self.ratio = tk.Label(info_grid, text="-", anchor='w')
         self.ratio.grid(row=4, column=1, sticky='w')
         
-        # Graph
         self.graph_frame = tk.LabelFrame(right_panel, text="График сигнала")
         self.graph_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
@@ -576,19 +537,14 @@ class SensorAnalyzerApp:
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame)
         self.toolbar.update()
         
-        # Восстанавливаем данные после создания интерфейса
         if hasattr(self, '_analysis_mode_state'):
-            # Обновляем таблицу датчиков
             self.update_table()
             
-            # Показываем текущий датчик
             if self.sensors and 0 <= self.current_sensor < len(self.sensors):
                 self.show_sensor()
             
-            # Обновляем кнопки навигации
             self.update_nav_buttons()
             
-            # Обновляем информацию о файле
             file_text = f"Датчики: {self.current_filename}" if self.current_filename else "Файл не выбран"
             if self.nature_list_data:
                 file_text += "\nНатурный лист: загружен"
@@ -601,7 +557,6 @@ class SensorAnalyzerApp:
         if not text:
             return
         
-        # Улучшенный поиск данных в тексте
         lines = text.split('\n')
         for line in lines:
             parts = re.split(r'\s{2,}|\|', line.strip())
@@ -625,17 +580,14 @@ class SensorAnalyzerApp:
             messagebox.showerror("Ошибка", "Не удалось извлечь данные")
             return
         
-        # Удаление дубликатов и сортировка
         df = pd.DataFrame(self.nature_list_data)
         df = df.drop_duplicates(subset=["№ п/п"])
         df = df.sort_values(by=["№ п/п"])
         self.nature_list_data = df.to_dict('records')
         
-        # Обновление интерфейса
         nature_filename = Path(file_path).name
         self.file_label.config(text=f"Натурный лист: {nature_filename} (записей: {len(self.nature_list_data)})")
         
-        # Автоматическая подготовка к экспорту
         if hasattr(self, 'results'):
             self.prepare_export_data()
             if hasattr(self, 'preview_table'):
@@ -653,11 +605,10 @@ class SensorAnalyzerApp:
         try:
             with pdfplumber.open(file_path) as pdf:
                 self.nature_list_data = []
-                num_pattern = re.compile(r'^\d+$')  # Для номера
-                load_pattern = re.compile(r'^\d+[,.]?\d*$')  # Для нагрузки
+                num_pattern = re.compile(r'^\d+$')  
+                load_pattern = re.compile(r'^\d+[,.]?\d*$')  
                 
                 for page in pdf.pages:
-                    # Улучшенное извлечение таблиц с настройками
                     table = page.extract_table({
                         "vertical_strategy": "text", 
                         "horizontal_strategy": "text",
@@ -665,16 +616,13 @@ class SensorAnalyzerApp:
                     })
                     
                     if not table:
-                        # Альтернативный метод для сложных страниц
                         self._parse_complex_page(page)
                         continue
                     
-                    # Автоматическое определение структуры
                     for row in table:
                         if len(row) < 2:
                             continue
                             
-                        # Поиск данных в строке
                         num, load = None, None
                         for cell in row:
                             if not cell:
@@ -690,7 +638,6 @@ class SensorAnalyzerApp:
                                 "Т на ось": load
                             })
                 
-                # Проверка и сохранение результатов
                 self._validate_and_save_results(file_path)
                 
         except Exception as e:
@@ -702,7 +649,6 @@ class SensorAnalyzerApp:
         current_text = self.file_label.cget("text")
         self.file_label.config(text=f"{current_text}\nНатурный лист: {nature_filename}")
         
-        # Подготовка данных для экспорта
         if hasattr(self, 'results') and self.results:
             self.prepare_export_data()
             if hasattr(self, 'preview_table'):
@@ -727,11 +673,9 @@ class SensorAnalyzerApp:
             
             lines = text.split('\n')
             for line in lines:
-                # Улучшенное определение структуры строки
                 parts = [p.strip() for p in re.split(r'\s{2,}|\|', line) if p.strip()]
                 
                 if len(parts) >= 2:
-                    # Проверяем формат номера и нагрузки
                     num_part = parts[0].replace(" ", "")
                     load_part = parts[1].replace(" ", "").replace(",", ".")
                     
@@ -748,7 +692,6 @@ class SensorAnalyzerApp:
                         except ValueError:
                             continue
         
-        # Если нашли хотя бы 5 корректных записей, считаем успешным
         if record_count >= 5:
             return True
         return False
@@ -764,7 +707,6 @@ class SensorAnalyzerApp:
             
             lines = text.split('\n')
             for line in lines:
-                # Ищем строки вида "1|614 40 574|23,4|93,6|P|текст"
                 if re.match(r'^\d+\|.+\|\d+,\d+\|', line):
                     parts = line.split('|')
                     if len(parts) >= 3:
@@ -788,16 +730,13 @@ class SensorAnalyzerApp:
         if not self.results or not self.pipeline:
             return
         
-        # Create speed window
         speed_window = tk.Toplevel(self.root)
         speed_window.title(f"Скорости поезда - {self.current_filename}")
         speed_window.geometry("800x600")
         
-        # Create notebook for different sensors
         notebook = ttk.Notebook(speed_window)
         notebook.pack(fill=tk.BOTH, expand=True)
         
-        # Add tab for each sensor with speed data
         for result in self.results:
             if result['signal_type'] not in ['max_dominated', 'min_dominated']:
                 continue
@@ -805,7 +744,6 @@ class SensorAnalyzerApp:
             frame = ttk.Frame(notebook)
             notebook.add(frame, text=result['sensor'])
             
-            # Create table
             tree = ttk.Treeview(frame, columns=('zone', 'time', 'speed', 'delta_t'), show='headings')
             tree.heading('zone', text='Зона')
             tree.heading('time', text='Время (с)')
@@ -816,8 +754,7 @@ class SensorAnalyzerApp:
             scrollbar = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
             tree.configure(yscrollcommand=scrollbar.set)
             scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            # Calculate and add speed data
+
             analyzer = TrainSpeedAnalyzer(graph_type=result['signal_type'])
             peaks = result['max_peaks'] if result['signal_type'] == 'max_dominated' else result['min_peaks']
             speed_data = analyzer.calculate_speeds(result['time'], peaks)
@@ -835,27 +772,22 @@ class SensorAnalyzerApp:
             return
         
         result = self.results[self.current_sensor]
-        
-        # Create raw graph window
+   
         raw_window = tk.Toplevel(self.root)
         raw_window.title(f"Сырой график - {result['sensor']}")
         raw_window.geometry("1000x600")
         
-        # Create figure
         fig = Figure(figsize=(10, 5), dpi=100)
         ax = fig.add_subplot(111)
         
-        # Plot raw data
         ax.plot(result['time'], result['data'], 'b-', label='Сигнал', linewidth=1)
         
-        # Format graph
         ax.set_title(f"Сырой график: {result['sensor']} (Тип: {result['signal_type']})")
         ax.set_xlabel('Время, с')
         ax.set_ylabel('Напряжение, мВ')
         ax.legend()
         ax.grid(True, alpha=0.3)
         
-        # Embed in window
         canvas = FigureCanvasTkAgg(fig, master=raw_window)
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
@@ -868,7 +800,6 @@ class SensorAnalyzerApp:
         
         result = self.results[self.current_sensor]
         
-        # Update info
         self.sensor_name.config(text=result['sensor'])
         self.sensor_type.config(text=result['signal_type'])
         self.mean_max.config(text=f"{result['mean_max']:.2f}")
@@ -877,15 +808,12 @@ class SensorAnalyzerApp:
         ratio_text = f"{result['ratio']:.2f}:1" if result['ratio'] != float('inf') else "∞"
         self.ratio.config(text=ratio_text)
         
-        # Update graph
         self.ax.clear()
         
         if not result['analyzed'] or result['signal_type'] == 'balanced':
-            # Для неанализированных или balanced сигналов показываем только сырой график
             self.ax.plot(result['time'], result['data'], 'b-', label='Сигнал', linewidth=1)
             self.ax.set_title(f"{result['sensor']} | Тип: {result['signal_type']} (не анализировался)")
         else:
-            # Для анализированных сигналов показываем полный график с пиками и зонами
             self.plot_analyzed_signal(result)
         
         self.ax.set_xlabel('Время, с')
@@ -897,10 +825,8 @@ class SensorAnalyzerApp:
     
     def plot_analyzed_signal(self, result):
         """Отрисовка анализированного сигнала с пиками и зонами"""
-        # Plot signal
         self.ax.plot(result['time'], result['data'], 'b-', label='Сигнал', linewidth=1)
         
-        # Color mapping for signal types
         color_map = {
             'max_dominated': 'red',
             'min_dominated': 'green',
@@ -908,7 +834,6 @@ class SensorAnalyzerApp:
             'abnormal': 'gray'
         }
         
-        # Determine active peaks and color based on signal type
         if result['signal_type'] == 'max_dominated':
             active_peaks = result['max_peaks']
             peak_color = 'red'
@@ -919,7 +844,6 @@ class SensorAnalyzerApp:
             active_peaks = np.array([])
             peak_color = 'gray'
         
-        # Create zones for active peaks
         zones = []
         if result['signal_type'] in ['max_dominated', 'min_dominated']:
             peak_count_per_zone = 4
@@ -936,11 +860,9 @@ class SensorAnalyzerApp:
                     'peaks': zone_peaks
                 })
         
-        # Draw zones
         for i, zone in enumerate(zones):
             self.ax.axvspan(zone['start'], zone['end'], facecolor=peak_color, alpha=0.1)
         
-        # Plot all peaks
         self.ax.scatter(result['time'][result['max_peaks']], 
                        result['data'][result['max_peaks']], 
                        color='red', marker='^', s=100, label='Максимумы')
@@ -949,7 +871,6 @@ class SensorAnalyzerApp:
                        result['data'][result['min_peaks']], 
                        color='green', marker='v', s=100, label='Минимумы')
         
-        # Add mean lines
         if len(result['max_peaks']) > 0:
             mean_max = np.mean(result['data'][result['max_peaks']])
             self.ax.axhline(mean_max, color='red', linestyle='--', alpha=0.5, 
@@ -960,7 +881,6 @@ class SensorAnalyzerApp:
             self.ax.axhline(-mean_min, color='green', linestyle='--', alpha=0.5, 
                            label=f'Средний минимум: {-mean_min:.2f}')
         
-        # Format title
         title_color = color_map.get(result['signal_type'], 'black')
         self.ax.set_title(f"{result['sensor']} | Тип: {result['signal_type']}", color=title_color)
     
@@ -972,37 +892,30 @@ class SensorAnalyzerApp:
             return None
         
         try:
-            # Создаем DataFrame из натурного листа
             export_df = pd.DataFrame(self.nature_list_data)
             
-            # Добавляем колонки для каждого подходящего датчика
             for result in self.results:
                 if result['signal_type'] not in ['max_dominated', 'min_dominated']:
                     continue
                     
                 sensor_name = result['sensor']
                 values = []
-                
-                # Определяем активные пики
+
                 active_peaks = (result['max_peaks'] if result['signal_type'] == 'max_dominated' 
                             else result['min_peaks'])
-                
-                # Разбиваем на зоны по 4 пика
+
                 num_zones = len(active_peaks) // 4
                 for i in range(num_zones):
                     start_idx = i * 4
                     end_idx = (i + 1) * 4
                     zone_peaks = active_peaks[start_idx:end_idx]
-                    
-                    # Вычисляем среднее значение в зоне
+
                     zone_mean = np.mean(np.abs(result['data'][zone_peaks]))
                     values.append(zone_mean)
-                
-                # Добавляем данные датчика (обрезаем до количества строк натурного листа)
+
                 if len(values) >= len(export_df):
                     export_df[sensor_name] = values[:len(export_df)]
                 else:
-                    # Если зон меньше, чем строк в натурном листе, заполняем оставшиеся NaN
                     values.extend([np.nan] * (len(export_df) - len(values)))
                     export_df[sensor_name] = values
             
@@ -1017,7 +930,6 @@ class SensorAnalyzerApp:
     def export_data(self):
         """Экспортирует данные в выбранном формате"""
         if not hasattr(self, 'export_data_df') or self.export_data_df.empty:
-            # Если данных нет, попробуем подготовить их
             if not self.prepare_export_data():
                 return
         
@@ -1064,11 +976,9 @@ class SensorAnalyzerApp:
         has_sensors = len(self.sensors) > 0
         self.prev_btn.config(state=tk.NORMAL if has_sensors and self.current_sensor > 0 else tk.DISABLED)
         self.next_btn.config(state=tk.NORMAL if has_sensors and self.current_sensor < len(self.sensors)-1 else tk.DISABLED)
-        
-        # Enable raw graph button only if there are sensors
+
         self.show_raw_btn.config(state=tk.NORMAL if has_sensors else tk.DISABLED)
-        
-        # Disable speed button for balanced signals
+  
         if has_sensors:
             current_result = self.results[self.current_sensor]
             self.speed_btn.config(state=tk.NORMAL if current_result['signal_type'] in ['max_dominated', 'min_dominated'] else tk.DISABLED)
@@ -1086,7 +996,6 @@ class SensorAnalyzerApp:
             self.update_nav_buttons()
     
     def clear_main_area(self):
-        # Очищаем основную область
         for widget in self.main_frame.winfo_children():
             widget.destroy()
     
@@ -1097,8 +1006,7 @@ class SensorAnalyzerApp:
         self.pipeline = None
         self.analyzer = None
         self.current_filename = "Файл не выбран"
-        
-        # Reset UI
+
         self.file_label.config(text=self.current_filename)
         self.sensor_name.config(text="-")
         self.sensor_type.config(text="-")
