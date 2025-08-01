@@ -173,6 +173,12 @@ class MeanPeakAnalyzer:
                 self._plot_signal(sensor, self.time, data, empty_peaks, empty_peaks, 'abnormal')
                 continue
 
+            # Вывод количества пиков в консоль
+            if signal_type == 'max_dominated':
+                print(f"  [i] Обнаружено пиков максимумов: {len(max_peaks)}")
+            elif signal_type == 'min_dominated':
+                print(f"  [i] Обнаружено пиков минимумов: {len(min_peaks)}")
+
             self.speed_analyzer = TrainSpeedAnalyzer(graph_type=signal_type)
             active_peaks = max_peaks if signal_type == 'max_dominated' else min_peaks
             speeds = self.speed_analyzer.calculate_speeds(self.time, active_peaks)
@@ -184,7 +190,8 @@ class MeanPeakAnalyzer:
                 'sensor': sensor,
                 'type': signal_type,
                 'mean_max': np.mean(data[max_peaks]) if len(max_peaks) > 0 else 0,
-                'mean_min': np.mean(np.abs(data[min_peaks])) if len(min_peaks) > 0 else 0
+                'mean_min': np.mean(np.abs(data[min_peaks])) if len(min_peaks) > 0 else 0,
+                'peak_count': len(max_peaks) if signal_type == 'max_dominated' else len(min_peaks)
             })
 
         self._print_summary(results)
@@ -192,13 +199,13 @@ class MeanPeakAnalyzer:
 
     def _classify_signal_preliminary(self, data):
         """Быстрая классификация по упрощенным критериям"""
-        # Берем 90-й перцентиль вместо максимальных значений
+        
         max_val = np.percentile(data, 50)
         min_val = np.percentile(-data, 50)
         
         if max_val == 0 and min_val == 0:
             return 'abnormal'
-        elif max_val > min_val * 1.5:  # Более жесткий критерий для предварительной оценки
+        elif max_val > min_val * 1.5:  
             return 'max_dominated'
         elif min_val > max_val * 1.5:
             return 'min_dominated'
@@ -220,3 +227,5 @@ class MeanPeakAnalyzer:
                           r in filtered]
                 avg_ratio = np.mean(ratios)
                 print(f"Среднее соотношение для {typ}: {avg_ratio:.2f}:1")
+                avg_peaks = np.mean([r['peak_count'] for r in filtered])
+                print(f"Среднее количество пиков для {typ}: {avg_peaks:.1f}")
